@@ -1,4 +1,5 @@
 import 'dart:async';
+
 // import 'dart:io';
 import 'dart:typed_data';
 
@@ -28,6 +29,7 @@ class _MyAppState extends State<MyApp> {
   List<dynamic> data = [];
   List<dynamic> images = [];
   List<dynamic> keys = [];
+
   // List<String> timelines = [];
   // List<String> sessions = [];
   // Map<String, List<String>> sessionsMap = {};
@@ -50,14 +52,14 @@ class _MyAppState extends State<MyApp> {
         }
         if (res.runtimeType != List<Object?>) {
           final uInt8List = Uint8List.fromList(res.toList());
-         //  final file = File.fromRawPath(uInt8List);
-         //  file.path;
-         //  file.uri;
-         //  String extension = p.extension(file.path);
-         // String filename = p.basename(file.path);
-         //
-         //  print("Extension: $extension");
-         //  print("Filename: $filename");
+          //  final file = File.fromRawPath(uInt8List);
+          //  file.path;
+          //  file.uri;
+          //  String extension = p.extension(file.path);
+          // String filename = p.basename(file.path);
+          //
+          //  print("Extension: $extension");
+          //  print("Filename: $filename");
 
           images.add(uInt8List);
         } else {
@@ -231,19 +233,14 @@ class _MyAppState extends State<MyApp> {
                 ],
               ),
             ),
-            SliverList.builder(
-              itemBuilder: (context, index) => ListTile(
+            const SliverToBoxAdapter(child: SizedBox(height: 10)),
+            SliverList.separated(
+              itemBuilder: (context, index) => ListTile(tileColor: Colors.grey[300],
                 title: Text(data[index].toString()),
               ),
+              separatorBuilder: (context, index) => const SizedBox(height: 8,),
               itemCount: data.length,
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            // const SliverToBoxAdapter(
-            //   child: Text(
-            //     'Shared image data:',
-            //     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            //   ),
-            // ),
             SliverList.builder(
               itemBuilder: (context, index) => Padding(
                 padding: const EdgeInsets.only(top: 12),

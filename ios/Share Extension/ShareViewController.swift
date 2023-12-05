@@ -147,10 +147,10 @@ class ShareViewController: UIViewController {
                        if attachment.isImage {
                            handleMediaData(content: content, index: index)
                        } else if attachment.isMovie {
-                           handleMediaData(content: content,  index: index)
+                           handleTextData(content: content,  index: index)
                        }
                        else if attachment.isFile {
-                           handleMediaData(content: content,  index: index)
+                           handleTextData(content: content,  index: index)
                       }
                        else if attachment.isURL {
                            handleTextData(content: content,  index: index)
@@ -198,6 +198,25 @@ class ShareViewController: UIViewController {
             }
             
             userDefaults?.set(this.imageData, forKey: dataKey)
+            
+            prevListObj.append(dataKey)
+            userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
+        }
+        self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
+    }
+    
+    
+    private func handleFileData (content: NSExtensionItem,  index: Int) {
+        let this = self
+        if index == (content.attachments?.count)! - 1 {
+            let userDefaults = UserDefaults(suiteName: this.appGroupId)
+            let dataKey = getDataKey()
+            var prevListObj = [String]()
+            if let responseData = userDefaults?.object(forKey: "\(timeline)_\(section)") as? [String] {
+                prevListObj = responseData
+            }
+            
+            userDefaults?.set(this.toData(data: this.sharedMedia), forKey: dataKey)
             
             prevListObj.append(dataKey)
             userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
@@ -314,14 +333,22 @@ class ShareViewController: UIViewController {
 //                  }
                   
                   if(copied) {
-                      self?.imageData = try! Data(contentsOf: newPath)
-                      
+                      this.sharedText.append(fileName)
                       DispatchQueue.main.async {
-                          if (this.imageData != nil) {
-                              self?.contentLbl.text = fileName
+                          if (!this.sharedText.isEmpty) {
+                              self?.contentLbl.text = this.sharedText.first
                           }
                       }
                   }
+//                  if(copied) {
+//                      self?.imageData = try! Data(contentsOf: newPath)
+//
+//                      DispatchQueue.main.async {
+//                          if (this.imageData != nil) {
+//                              self?.contentLbl.text = fileName
+//                          }
+//                      }
+//                  }
 
               } else {
                    self?.dismissWithError()
@@ -341,20 +368,22 @@ class ShareViewController: UIViewController {
                       .containerURL(forSecurityApplicationGroupIdentifier: this.appGroupId)!
                       .appendingPathComponent(fileName)
                   let copied = this.copyFile(at: url, to: newPath)
-//                  if (copied) {
-//                      this.sharedMedia.append(SharingFile(value: newPath.absoluteString, thumbnail: nil, duration: nil, type: .file))
-//                  }
+                  //                  if (copied) {
+                  //                      this.sharedMedia.append(SharingFile(value: newPath.absoluteString, thumbnail: nil, duration: nil, type: .file))
+                  //
+                  //                      DispatchQueue.main.async {
+                  //                          self?.contentLbl.text = fileName
+                  //                          print("FileName: \(fileName)")
+                  //                      }
+                  //                  }
                   if(copied) {
-                      self?.imageData = try! Data(contentsOf: newPath)
-                      
+                      this.sharedText.append(fileName)
                       DispatchQueue.main.async {
-                          if (this.imageData != nil) {
-                              self?.contentLbl.text = fileName
-                              print("FileName: \(fileName)")
+                          if (!this.sharedText.isEmpty) {
+                              self?.contentLbl.text = this.sharedText.first
                           }
                       }
                   }
-
               } else {
                   self?.dismissWithError()
               }
