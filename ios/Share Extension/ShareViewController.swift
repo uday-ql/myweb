@@ -145,18 +145,18 @@ class ShareViewController: UIViewController {
                if let contents = content.attachments {
                    for (index, attachment) in (contents).enumerated() {
                        if attachment.isImage {
-                           handleMediaData(content: content, index: index)
+                           handleShare(content: content, index: index)
                        } else if attachment.isMovie {
-                           handleTextData(content: content,  index: index)
+                           handleShare(content: content,  index: index)
                        }
                        else if attachment.isFile {
-                           handleTextData(content: content,  index: index)
+                           handleShare(content: content,  index: index)
                       }
                        else if attachment.isURL {
-                           handleTextData(content: content,  index: index)
+                           handleShare(content: content,  index: index)
                        }
                        else if attachment.isText {
-                           handleTextData(content: content, index: index)
+                           handleShare(content: content, index: index)
                        } else {
                            print(" \(attachment) File type is not supported by flutter shaing plugin.")
                        }
@@ -168,7 +168,7 @@ class ShareViewController: UIViewController {
     }
 
     
-    private func handleTextData (content: NSExtensionItem, index: Int) {
+    private func handleShare (content: NSExtensionItem, index: Int) {
         let this = self
         if index == (content.attachments?.count)! - 1 {
             let userDefaults = UserDefaults(suiteName: this.appGroupId)
@@ -178,52 +178,13 @@ class ShareViewController: UIViewController {
                 prevListObj = responseData
             }
             
-            userDefaults?.set(this.sharedText, forKey: dataKey)
+            userDefaults?.set(this.sharedText[index], forKey: dataKey)
             
             prevListObj.append(dataKey)
             userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
         }
         self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
     }
-
-    
-    private func handleMediaData (content: NSExtensionItem,  index: Int) {
-        let this = self
-        if index == (content.attachments?.count)! - 1 {
-            let userDefaults = UserDefaults(suiteName: this.appGroupId)
-            let dataKey = getDataKey()
-            var prevListObj = [String]()
-            if let responseData = userDefaults?.object(forKey: "\(timeline)_\(section)") as? [String] {
-                prevListObj = responseData
-            }
-            
-            userDefaults?.set(this.imageData, forKey: dataKey)
-            
-            prevListObj.append(dataKey)
-            userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
-        }
-        self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
-    }
-    
-    
-    private func handleFileData (content: NSExtensionItem,  index: Int) {
-        let this = self
-        if index == (content.attachments?.count)! - 1 {
-            let userDefaults = UserDefaults(suiteName: this.appGroupId)
-            let dataKey = getDataKey()
-            var prevListObj = [String]()
-            if let responseData = userDefaults?.object(forKey: "\(timeline)_\(section)") as? [String] {
-                prevListObj = responseData
-            }
-            
-            userDefaults?.set(this.toData(data: this.sharedMedia), forKey: dataKey)
-            
-            prevListObj.append(dataKey)
-            userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
-        }
-        self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
-    }
-    
     
     private func getDataKey ()  -> String {
         let date = Date()
@@ -285,6 +246,7 @@ class ShareViewController: UIViewController {
                  let copied = this.copyFile(at: url, to: newPath) 
                  if(copied) {
                      self?.imageData = try! Data(contentsOf: newPath)
+                     this.sharedText.append(newPath.absoluteString)
                  }
                  
                  DispatchQueue.main.async {
@@ -325,30 +287,14 @@ class ShareViewController: UIViewController {
                       .containerURL(forSecurityApplicationGroupIdentifier:this.appGroupId)!
                       .appendingPathComponent(fileName)
                   let copied = this.copyFile(at: url, to: newPath)
-//                  if(copied) {
-//                      guard let sharedFile = this.getSharedMediaFile(forVideo: newPath) else {
-//                          return
-//                      }
-//                      this.sharedMedia.append(sharedFile)
-//                  }
-                  
                   if(copied) {
-                      this.sharedText.append(fileName)
+                      this.sharedText.append(newPath.absoluteString)
                       DispatchQueue.main.async {
                           if (!this.sharedText.isEmpty) {
-                              self?.contentLbl.text = this.sharedText.first
+                              self?.contentLbl.text = fileName
                           }
                       }
                   }
-//                  if(copied) {
-//                      self?.imageData = try! Data(contentsOf: newPath)
-//
-//                      DispatchQueue.main.async {
-//                          if (this.imageData != nil) {
-//                              self?.contentLbl.text = fileName
-//                          }
-//                      }
-//                  }
 
               } else {
                    self?.dismissWithError()
@@ -363,24 +309,15 @@ class ShareViewController: UIViewController {
 
                   // Always copy
                   let fileName = this.getFileName(from :url, type: .file)
-                  print("FileName 1: \(fileName)")
                   let newPath = FileManager.default
                       .containerURL(forSecurityApplicationGroupIdentifier: this.appGroupId)!
                       .appendingPathComponent(fileName)
                   let copied = this.copyFile(at: url, to: newPath)
-                  //                  if (copied) {
-                  //                      this.sharedMedia.append(SharingFile(value: newPath.absoluteString, thumbnail: nil, duration: nil, type: .file))
-                  //
-                  //                      DispatchQueue.main.async {
-                  //                          self?.contentLbl.text = fileName
-                  //                          print("FileName: \(fileName)")
-                  //                      }
-                  //                  }
                   if(copied) {
-                      this.sharedText.append(fileName)
+                      this.sharedText.append(newPath.absoluteString)
                       DispatchQueue.main.async {
                           if (!this.sharedText.isEmpty) {
-                              self?.contentLbl.text = this.sharedText.first
+                              self?.contentLbl.text = fileName
                           }
                       }
                   }

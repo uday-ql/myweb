@@ -1,14 +1,16 @@
+import 'dart:io';
 import 'dart:async';
 
-// import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-// import 'package:path/path.dart' as p;
+import 'package:mime/mime.dart';
+import 'package:shared_preference_app_group/shared_preference_app_group.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_sharing_intent_example/add_timeline_session_page.dart';
 import 'package:flutter_sharing_intent_example/constant_strings.dart';
-import 'package:shared_preference_app_group/shared_preference_app_group.dart';
+
+import 'cached_video_player.dart';
+import 'file_tile.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +28,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<dynamic> data = [];
-  List<dynamic> images = [];
-  List<dynamic> keys = [];
+  List<String> texts = [];
+  List<String> urls = [];
+  List<File> images = [];
+  List<File> videos = [];
+  List<File> files = [];
+
+  List<String> keys = [];
 
   // List<String> timelines = [];
   // List<String> sessions = [];
@@ -38,35 +44,14 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    setData();
+    _initialFetch();
     super.initState();
   }
 
-  Future<void> setData() async {
+  Future<void> _initialFetch() async {
     try {
       keys = await getDataList();
-      for (var key in keys) {
-        final res = await SharedPreferenceAppGroup.get(key);
-        if (res == null) {
-          return;
-        }
-        if (res.runtimeType != List<Object?>) {
-          final uInt8List = Uint8List.fromList(res.toList());
-          //  final file = File.fromRawPath(uInt8List);
-          //  file.path;
-          //  file.uri;
-          //  String extension = p.extension(file.path);
-          // String filename = p.basename(file.path);
-          //
-          //  print("Extension: $extension");
-          //  print("Filename: $filename");
-
-          images.add(uInt8List);
-        } else {
-          data.add(res.first);
-        }
-      }
-
+      await setData(keys);
       setState(() {});
     } catch (e, st) {
       debugPrint(e.toString());
@@ -74,14 +59,52 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<List<dynamic>> getDataList() async {
+  Future<void> setData(List<String> keysToFetch) async {
+    for (var key in keysToFetch) {
+      final res = await SharedPreferenceAppGroup.get(key);
+      if (res == null) {
+        continue;
+      }
+      debugPrint(res.toString());
+      final value = Uri.tryParse(res);
+      if (value == null) {
+        texts.add(res);
+      } else {
+        final bool isFile = value.isScheme("file");
+        final bool isUrl = value.isScheme("http") || value.isScheme("https");
+        if (isUrl) {
+          urls.add(value.toString());
+        } else if (isFile) {
+          String filePath = value.path;
+          File file = File(value.path);
+          String? mimeType = lookupMimeType(filePath);
+          debugPrint('MIME type: $mimeType');
+          if (mimeType == null) {
+            continue;
+          }
+          if (mimeType.contains("image")) {
+            images.add(file);
+          } else if (mimeType.contains("video")) {
+            videos.add(file);
+          } else {
+            files.add(file);
+          }
+        } else {
+          texts.add(res);
+        }
+      }
+    }
+  }
+
+  Future<List<String>> getDataList() async {
     try {
       const key = "${StringConst.timeline}_${StringConst.section}";
       final res = await SharedPreferenceAppGroup.get(key);
       if (res == null) {
         return [];
       } else {
-        return res;
+        final keys = (res as List).map((e) => e.toString()).toList();
+        return keys;
       }
     } catch (e, st) {
       debugPrint(e.toString());
@@ -109,25 +132,19 @@ class _MyAppState extends State<MyApp> {
   Future<void> refresh() async {
     try {
       final newKeys = await getDataList();
-      final needToFetch = newKeys.toSet().difference(keys.toSet());
+      final needToFetch = newKeys.toSet().difference(keys.toSet()).toList();
       keys = newKeys;
-      for (var key in needToFetch) {
-        final res = await SharedPreferenceAppGroup.get(key);
-        if (res == null) {
-          return;
-        }
-        if (res.runtimeType != List<Object?>) {
-          final uInt8List = Uint8List.fromList(res.toList());
-          images.add(uInt8List);
-        } else {
-          data.add(res.first);
-        }
-      }
-
+      await setData(needToFetch);
       setState(() {});
     } catch (e, st) {
       debugPrint(e.toString());
       debugPrintStack(stackTrace: st);
+    }
+  }
+
+  Future<void> _onLinkTap(String link) async {
+    if (await canLaunchUrl(Uri.parse(link))) {
+      await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
     }
   }
 
@@ -235,18 +252,58 @@ class _MyAppState extends State<MyApp> {
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
             SliverList.separated(
-              itemBuilder: (context, index) => ListTile(tileColor: Colors.grey[300],
-                title: Text(data[index].toString()),
+              itemBuilder: (context, index) => ListTile(
+                tileColor: Colors.grey[300],
+                title: Text(texts[index].toString()),
               ),
-              separatorBuilder: (context, index) => const SizedBox(height: 8,),
-              itemCount: data.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemCount: texts.length,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverList.separated(
+              itemBuilder: (context, index) => ListTile(
+                tileColor: Colors.grey[300],
+                minVerticalPadding: 10,
+                title: InkWell(
+                  onTap: () async {
+                    await _onLinkTap(urls[index]);
+                  },
+                  child: Text(
+                    urls[index],
+                    style: const TextStyle(
+                      color: Colors.blueAccent,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+              separatorBuilder: (context, index) => const SizedBox(
+                height: 8,
+              ),
+              itemCount: urls.length,
             ),
             SliverList.builder(
               itemBuilder: (context, index) => Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Image.memory(images[index]!),
+                child: Image.file(images[index]),
               ),
               itemCount: images.length,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverList.separated(
+              itemBuilder: (context, index) {
+                return CachedVideoPlayerWidget(filePath: videos[index].path);
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemCount: videos.length,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 10)),
+            SliverList.separated(
+              itemBuilder: (context, index) {
+                return FileTile(file: files[index]);
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemCount: files.length,
             ),
           ]),
         ),
