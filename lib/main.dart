@@ -7,7 +7,6 @@ import 'package:shared_preference_app_group/shared_preference_app_group.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_sharing_intent_example/add_timeline_session_page.dart';
-import 'package:flutter_sharing_intent_example/constant_strings.dart';
 
 import 'cached_video_player.dart';
 import 'file_tile.dart';
@@ -28,6 +27,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String defaultTimeline = "initial_timeline";
+  String defaultSession = "initial_session";
+
   List<String> texts = [];
   List<String> urls = [];
   List<File> images = [];
@@ -39,8 +41,6 @@ class _MyAppState extends State<MyApp> {
   // List<String> timelines = [];
   // List<String> sessions = [];
   // Map<String, List<String>> sessionsMap = {};
-  // String? selectedTimeline;
-  // String? selectedSession;
 
   @override
   void initState() {
@@ -50,6 +50,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _initialFetch() async {
     try {
+      await setDefaults();
       keys = await getDataList();
       await setData(keys);
       setState(() {});
@@ -98,7 +99,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<List<String>> getDataList() async {
     try {
-      const key = "${StringConst.timeline}_${StringConst.section}";
+      final key = "${defaultTimeline}_$defaultSession";
       final res = await SharedPreferenceAppGroup.get(key);
       if (res == null) {
         return [];
@@ -111,6 +112,15 @@ class _MyAppState extends State<MyApp> {
       debugPrintStack(stackTrace: st);
       return [];
     }
+  }
+
+  Future<void> setDefaults() async {
+    defaultTimeline =
+        await SharedPreferenceAppGroup.get("default_timeline") as String? ??
+            "initial_timeline";
+    defaultSession =
+        await SharedPreferenceAppGroup.get("default_session") as String? ??
+            "initial_session";
   }
 
   // Future<List<dynamic>> getTimelinesAndSession() async {
@@ -175,7 +185,7 @@ class _MyAppState extends State<MyApp> {
               child: Row(
                 children: [
                   // DropdownButton<String>(
-                  //   value: selectedTimeline,
+                  //   value: defaultTimeline,
                   //   icon: const Icon(Icons.keyboard_arrow_down),
                   //   items: timelines.map((String items) {
                   //     return DropdownMenuItem(
@@ -185,12 +195,12 @@ class _MyAppState extends State<MyApp> {
                   //   }).toList(),
                   //   onChanged: (String? newValue) {
                   //     setState(() {
-                  //       selectedTimeline = newValue!;
+                  //       defaultTimeline = newValue!;
                   //     });
                   //   },
                   // ),
                   // DropdownButton<String>(
-                  //   value: selectedSession,
+                  //   value: defaultSession,
                   //   icon: const Icon(Icons.keyboard_arrow_down),
                   //   items: sessions.map((String items) {
                   //     return DropdownMenuItem(
@@ -200,7 +210,7 @@ class _MyAppState extends State<MyApp> {
                   //   }).toList(),
                   //   onChanged: (String? newValue) {
                   //     setState(() {
-                  //       selectedSession = newValue!;
+                  //       defaultSession = newValue!;
                   //     });
                   //   },
                   // ),
@@ -209,17 +219,19 @@ class _MyAppState extends State<MyApp> {
                       decoration: BoxDecoration(
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(8)),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Text(
-                              'Timeline 1',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w600),
+                            Expanded(
+                              child: Text(
+                                defaultTimeline.replaceFirst("_", " "),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w600),
+                              ),
                             ),
-                            Spacer(),
-                            Icon(Icons.arrow_drop_down_outlined)
+                            const Icon(Icons.arrow_drop_down_outlined)
                           ],
                         ),
                       ),
@@ -231,17 +243,19 @@ class _MyAppState extends State<MyApp> {
                       decoration: BoxDecoration(
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(8)),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Text(
-                              'Session 5',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w600),
+                            Expanded(
+                              child: Text(
+                                defaultSession.replaceFirst("_", " "),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w600),
+                              ),
                             ),
-                            Spacer(),
-                            Icon(Icons.arrow_drop_down_outlined)
+                            const Icon(Icons.arrow_drop_down_outlined)
                           ],
                         ),
                       ),

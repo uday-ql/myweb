@@ -17,15 +17,15 @@ import ImageIO
 class ShareViewController: UIViewController {
     // TODO: IMPORTANT: This should be your host app bundle identifier
     var hostAppBundleIdentifier = "com.techind.flutterSharingIntentExample"
-
+    
     var appGroupId = ""
     var sharedText: [String] = []
     var imageData: Data?
-    var timeline: String = "Timeline 1"
-    var section: String = "Session 5"
+    var timeline: String = "initial_timeline"
+    var session: String = "initial_session"
     
-    var timelines: [String] = ["A","B"]
-    var sections = ["A" : ["X", "Y", "Z"], "B": ["W", "Q", "V"]]
+    var timelines: [String] = []
+    var sessions: [String:[String]] = [:]
     
     let imageContentType = UTType.image.identifier;
     let videoContentType = UTType.movie.identifier;
@@ -49,7 +49,7 @@ class ShareViewController: UIViewController {
         hideViews()
         self.view.backgroundColor = .clear
         loadIds();
-        print(sections["A"] ?? [])
+        initDefaults()
         DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: {
             if (self.isNeedToCloseSheet) {
                 self.handleButtonPress()
@@ -145,6 +145,7 @@ class ShareViewController: UIViewController {
                 for (index, _) in (contents).enumerated() {
                     handleShare(index: index)
                 }
+                setDefaults()
             }
         }
         
@@ -156,14 +157,15 @@ class ShareViewController: UIViewController {
         let userDefaults = UserDefaults(suiteName: this.appGroupId)
         let dataKey = getDataKey()
         var prevListObj = [String]()
-        if let responseData = userDefaults?.object(forKey: "\(timeline)_\(section)") as? [String] {
+        if let responseData = userDefaults?.object(forKey: "\(timeline)_\(session)") as? [String] {
             prevListObj = responseData
         }
         
         userDefaults?.set(this.sharedText[index], forKey: dataKey)
         
         prevListObj.append(dataKey)
-        userDefaults?.set(prevListObj, forKey: "\(timeline)_\(section)")
+        userDefaults?.set(prevListObj, forKey: "\(timeline)_\(session)")
+        
         
         self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
     }
@@ -172,9 +174,71 @@ class ShareViewController: UIViewController {
         let date = Date()
         let timestamp = date.timeIntervalSince1970
         print(timestamp)
-        let dataKey = "\(timeline)_\(section)_\(timestamp)"
+        let dataKey = "\(timeline)_\(session)_\(timestamp)"
         
         return dataKey
+    }
+    
+//    private func setCustomSession (){
+//        let this = self
+//
+//        let userDefaults = UserDefaults(suiteName: this.appGroupId)
+//        let prevSListObj = [timeline:[session,"new_session"]]
+//        userDefaults?.set(prevSListObj, forKey: "sessions")
+//
+//    }
+//
+//    private func setCustomSessionValue (){
+//        let this = self
+//
+//        let userDefaults = UserDefaults(suiteName: this.appGroupId)
+//        session = "new_session"
+//        userDefaults?.set("new_session", forKey: "default_session")
+//
+//    }
+    
+    private func initDefaults () {
+        let this = self
+        
+        let userDefaults = UserDefaults(suiteName: this.appGroupId)
+        let defaultTimeline = userDefaults?.object(forKey: "default_timeline")
+        let defaultSession = userDefaults?.object(forKey: "default_session")
+        
+        timeline = defaultTimeline as? String ?? "initial_timeline"
+        session = defaultSession as? String ?? "initial_session"
+        if(defaultTimeline == nil){
+            userDefaults?.set(timeline, forKey: "default_timeline")
+            var prevTLListObj = [String]()
+            prevTLListObj.append(timeline)
+            userDefaults?.set(prevTLListObj, forKey: "timelines")
+        }
+        if(defaultSession == nil){
+            userDefaults?.set(session, forKey: "default_session")
+            let prevSListObj = [timeline:[session]]
+            
+            userDefaults?.set(prevSListObj, forKey: "sessions")
+        }
+        
+        setTimelines(userDefaults: userDefaults)
+        setSession(userDefaults: userDefaults)
+    }
+    
+    private func setDefaults () {
+        let this = self
+        
+        let userDefaults = UserDefaults(suiteName: this.appGroupId)
+        userDefaults?.set(timeline, forKey: "default_timeline")
+        userDefaults?.set(session, forKey: "default_session")
+    }
+    
+    private func setTimelines (userDefaults: UserDefaults?) {
+        let timelineList = userDefaults?.object(forKey: "timelines")
+        timelines = timelineList as? [String] ?? []
+    }
+    
+    private func setSession (userDefaults: UserDefaults?) {
+        let sessionMap = userDefaults?.object(forKey: "sessions")
+        sessions = sessionMap as? [String : [String]] ?? [:]
     }
     
     
