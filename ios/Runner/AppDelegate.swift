@@ -9,9 +9,6 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
       GeneratedPluginRegistrant.register(with: self)
-      let userDefaults = UserDefaults(suiteName: "group.com.techind.flutterSharingIntentExample")
-      print(userDefaults?.object(forKey: "SharingKey"))
-//      UserDefaults.standard.set("Uday Died", forKey: "SharingKey")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
    

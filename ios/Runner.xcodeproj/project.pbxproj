@@ -17,7 +17,6 @@
 		D1E5E4802930D1F3003CD518 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E5E47F2930D1F3003CD518 /* ShareViewController.swift */; };
 		D1E5E4832930D1F3003CD518 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D1E5E4812930D1F3003CD518 /* MainInterface.storyboard */; };
 		D1E5E4872930D1F3003CD518 /* Share Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D1E5E47D2930D1F3003CD518 /* Share Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		D1E5E49B2935B88D003CD518 /* SharingFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E5E49A2935B88D003CD518 /* SharingFile.swift */; };
 		D1E5E49D2935B89A003CD518 /* SharingFileType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E5E49C2935B89A003CD518 /* SharingFileType.swift */; };
 /* End PBXBuildFile section */
 
@@ -79,7 +78,6 @@
 		D1E5E47F2930D1F3003CD518 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		D1E5E4822930D1F3003CD518 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		D1E5E4842930D1F3003CD518 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D1E5E49A2935B88D003CD518 /* SharingFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SharingFile.swift; sourceTree = "<group>"; };
 		D1E5E49C2935B89A003CD518 /* SharingFileType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SharingFileType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -173,7 +171,6 @@
 			children = (
 				D17F854C2947170D00023B96 /* Share Extension.entitlements */,
 				D1E5E49C2935B89A003CD518 /* SharingFileType.swift */,
-				D1E5E49A2935B88D003CD518 /* SharingFile.swift */,
 				D1E5E47F2930D1F3003CD518 /* ShareViewController.swift */,
 				D1E5E4812930D1F3003CD518 /* MainInterface.storyboard */,
 				D1E5E4842930D1F3003CD518 /* Info.plist */,
@@ -372,7 +369,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D1E5E49B2935B88D003CD518 /* SharingFile.swift in Sources */,
 				D1E5E49D2935B89A003CD518 /* SharingFileType.swift in Sources */,
 				D1E5E4802930D1F3003CD518 /* ShareViewController.swift in Sources */,
 			);
